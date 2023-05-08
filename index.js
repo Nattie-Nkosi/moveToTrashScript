@@ -6,7 +6,7 @@ import fs from "fs";
 const folderToCheck = path.join(os.homedir(), "Downloads");
 const daysThreshold = 30; // You can enter your prefered days
 
-const logFile = "movedToTrash.txt";
+const logFile = "movedToTrash.log";
 
 function log(message) {
   const timeStamp = new Date().toISOString();
