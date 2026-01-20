@@ -147,7 +147,8 @@ function execPromise(command) {
 async function scheduleTask(frequency) {
   const scriptPath = __filename;
   const nodeExe = process.execPath;
-  const command = `"${nodeExe}" "${scriptPath}" --silent --notify`;
+  // schtasks requires escaped quotes for paths with spaces
+  const command = `\\"${nodeExe}\\" \\"${scriptPath}\\" --silent --notify`;
 
   let scheduleArgs;
   switch (frequency) {
@@ -170,7 +171,7 @@ async function scheduleTask(frequency) {
   try {
     await execPromise(schtasksCmd);
     console.log(`Scheduled task "${TASK_NAME}" created (${frequency}).`);
-    console.log(`Task will run: ${command}`);
+    console.log(`Task will run: ${nodeExe} ${scriptPath} --silent --notify`);
   } catch (error) {
     console.log(`Failed to create scheduled task: ${error.message}`);
     console.log("You may need to run this command as Administrator.");

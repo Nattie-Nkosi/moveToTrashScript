@@ -2,3 +2,5 @@ node_modules
 movedToTrash.txt
 CLAUDE.md
 .claude
+
+history.json
