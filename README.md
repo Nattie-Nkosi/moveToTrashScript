@@ -1,51 +1,152 @@
-# Move Old Files to Recycle Bin
+# CleanDownloads
 
-This script helps you automatically move files older than a specified number of days from a specific folder (e.g., Downloads) to the Recycle Bin.
+Automatically move old files from your Downloads folder (or any folder) to the Recycle Bin. Supports scheduling, notifications, and cleanup history tracking.
 
 ## Features
 
-- Automatically move files older than a specified number of days (default: 30 days) to the Recycle Bin.
-- Log the actions performed by the script, including successfully moved files and any errors.
-- Customizable folder to check and days threshold.
+- Move files older than a configurable threshold to the Recycle Bin
+- Multiple folder support with whitelist/blacklist filtering
+- Dry-run mode to preview changes
+- Interactive mode for per-file confirmation
+- Windows toast notifications
+- Automatic scheduling (startup, daily, weekly)
+- Cleanup history and statistics tracking
 
 ## Requirements
 
 - Node.js v14.0 or later
-- `trash` package
+- Windows (for notifications and scheduling features)
 
-## Setup
-
-1. Install Node.js.
-2. Install the `trash` package by running:
+## Installation
 
 ```bash
-  npm install trash
+npm install
 ```
 
-3. Replace the `folderToCheck` and `daysThreshold` variables in the script to customize the folder to be checked and the number of days threshold.
-
-```js
-const folderToCheck = path.join(os.homedir(), "Downloads"); // Change this to the folder you want to check
-const daysThreshold = 30; // Change this to the number of days threshold
-```
-
-4. Run the script with:
+## Usage
 
 ```bash
- node index.js
+# Run cleanup with default settings
+npm start
+
+# Preview what would be deleted (no actual deletion)
+npm start -- --dry-run
+
+# Run with notification
+npm start -- --notify
+
+# Run interactively (confirm each file)
+npm start -- --interactive
+
+# Override settings via CLI
+npm start -- --folder "C:\Users\Me\Desktop" --days 7
 ```
 
-## How it Works
+## CLI Options
 
-The script checks the specified folder for files older than the specified number of days. If it finds any files that meet the criteria, it moves them to the Recycle Bin. The script logs all actions, such as successfully moved files and any errors, to a file named `movedToTrash.txt`.
+| Option | Description |
+|--------|-------------|
+| `--folder <path>` | Override folders (can use multiple times) |
+| `--days <number>` | Override days threshold |
+| `--dry-run` | Preview without deleting |
+| `--interactive` | Prompt before each deletion |
+| `--notify` | Show Windows toast notification |
+| `--silent` | Suppress console output |
+| `--schedule <freq>` | Create scheduled task (daily/weekly/startup) |
+| `--unschedule` | Remove scheduled task |
+| `--stats` | Show cleanup history |
+| `--stats --clear` | Clear history |
+| `--help` | Show help message |
 
-## Customization
+## Configuration
 
-You can further customize the script by modifying the following variables:
+Settings are stored in `config.json`:
 
-- `folderToCheck`: The path of the folder you want to check for old files. By default, it is set to the Downloads folder.
-- `daysThreshold`: The number of days after which a file is considered old and moved to the Recycle Bin. By default, it is set to 30 days.
+```json
+{
+  "folders": ["~/Downloads"],
+  "daysThreshold": 30,
+  "whitelist": [],
+  "blacklist": [],
+  "dryRun": false,
+  "interactive": false,
+  "notify": true
+}
+```
+
+| Setting | Description |
+|---------|-------------|
+| `folders` | Array of folders to clean (supports `~` for home directory) |
+| `daysThreshold` | Files older than this many days are deleted |
+| `whitelist` | Only delete files with these extensions (e.g., `[".tmp", ".log"]`) |
+| `blacklist` | Never delete files with these extensions |
+| `dryRun` | If true, preview mode by default |
+| `interactive` | If true, prompt for each file by default |
+| `notify` | If true, show notification after cleanup |
+
+## Scheduling
+
+### Option 1: Windows Startup Folder (Recommended)
+
+Create a batch file at:
+```
+%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\CleanDownloads.bat
+```
+
+With contents:
+```batch
+@echo off
+cd /d "C:\path\to\cleanDownloads"
+node index.js --silent --notify
+```
+
+### Option 2: Task Scheduler (Requires Admin)
+
+```bash
+# Run as Administrator
+npm start -- --schedule startup   # Run on login
+npm start -- --schedule daily     # Run daily at 10:00 AM
+npm start -- --schedule weekly    # Run weekly on Monday
+
+# Remove scheduled task
+npm start -- --unschedule
+```
+
+## History & Stats
+
+Cleanup history is saved to `history.json`. View statistics with:
+
+```bash
+npm start -- --stats
+```
+
+Output:
+```
+=== CleanDownloads History ===
+Total runs: 15
+Total files deleted: 423
+Total space reclaimed: 12.5 GB
+
+Recent runs:
+  1/20/2026 10:30 AM - 45 files (1.2 GB)
+  1/19/2026 10:30 AM - 38 files (890 MB)
+  ...
+```
+
+Clear history:
+```bash
+npm start -- --stats --clear
+```
+
+## Files
+
+| File | Purpose |
+|------|---------|
+| `index.js` | Main script |
+| `config.json` | Configuration settings |
+| `history.json` | Cleanup run history (auto-created) |
+| `movedToTrash.log` | Detailed log of deleted files |
 
 ## Note
 
-Please use this script with caution, as moving files to the Recycle Bin is a potentially destructive action. It is recommended to test the script on a non-critical folder first to ensure it works as expected.
+Files are moved to the Recycle Bin, not permanently deleted. You can restore them if needed. Always test with `--dry-run` first.
