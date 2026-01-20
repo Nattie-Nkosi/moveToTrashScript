@@ -1,0 +1,9 @@
+{
+  "folders": ["~/Downloads"],
+  "daysThreshold": 30,
+  "whitelist": [],
+  "blacklist": [],
+  "dryRun": false,
+  "interactive": false,
+  "notify": true
+}
